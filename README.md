@@ -22,4 +22,4 @@ Encadrante : Line Jakubiec-Jamet
 
 ## Statut
 
-🚧 En cours de développement
+En cours de développement
