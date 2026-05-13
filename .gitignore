@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# PyCharm
+.idea/
+
+# Données et modèles (volumineux, non versionnés)
+data/
+models/*.keras
+models/*.h5
+models/*.pkl
+
+# Notebooks Jupyter (checkpoints)
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs et sorties
+*.log
+logs/
