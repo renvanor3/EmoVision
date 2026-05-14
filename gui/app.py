@@ -1,8 +1,9 @@
 """
 app.py
 Interface graphique EmoVision.
-Permet de charger une image statique depuis le disque, de détecter
-le visage présent, et d'afficher l'émotion prédite par le modèle CNN.
+Permet de charger une image statique ou d'activer le flux webcam
+en temps réel, avec détection de visage, prédiction d'émotion et
+affichage de l'histogramme des probabilités sur les 7 classes.
 """
 
 import sys
@@ -12,27 +13,36 @@ from tkinter import filedialog
 
 import cv2
 from PIL import Image, ImageTk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from predict.face_detector import detect_faces, extract_face
-from predict.predictor import load_model, predict_emotion
+from predict.predictor import CLASS_NAMES, load_model, predict_emotion
 
 
 CANVAS_WIDTH = 640
 CANVAS_HEIGHT = 480
+WEBCAM_DELAY_MS = 30
 
 
 class EmoVisionApp:
     def __init__(self, root):
         self.root = root
         self.root.title("EmoVision - Reconnaissance d'émotions")
-        self.root.geometry("800x650")
+        self.root.geometry("1150x700")
 
         self.model = load_model()
         self.current_image_tk = None
 
+        self.webcam_active = False
+        self.capture = None
+
         self._build_ui()
+        self._reset_histogram()
+
+        self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _build_ui(self):
         top_frame = tk.Frame(self.root)
@@ -45,14 +55,30 @@ class EmoVisionApp:
             width=20,
         ).pack(side=tk.LEFT, padx=5)
 
+        self.webcam_button = tk.Button(
+            top_frame,
+            text="Démarrer la webcam",
+            command=self.toggle_webcam,
+            width=20,
+        )
+        self.webcam_button.pack(side=tk.LEFT, padx=5)
+
+        middle_frame = tk.Frame(self.root)
+        middle_frame.pack(pady=10)
+
         self.canvas = tk.Canvas(
-            self.root,
+            middle_frame,
             width=CANVAS_WIDTH,
             height=CANVAS_HEIGHT,
             bg="gray20",
             highlightthickness=0,
         )
-        self.canvas.pack(pady=10)
+        self.canvas.pack(side=tk.LEFT, padx=10)
+
+        self.fig = Figure(figsize=(4.5, 4.8), dpi=100)
+        self.ax = self.fig.add_subplot(111)
+        self.fig_canvas = FigureCanvasTkAgg(self.fig, master=middle_frame)
+        self.fig_canvas.get_tk_widget().pack(side=tk.LEFT, padx=10)
 
         self.result_label = tk.Label(
             self.root,
@@ -61,7 +87,28 @@ class EmoVisionApp:
         )
         self.result_label.pack(pady=10)
 
+    def _draw_histogram(self, values, predicted_idx=None):
+        self.ax.clear()
+        if predicted_idx is None:
+            colors = ["lightgray"] * len(CLASS_NAMES)
+        else:
+            colors = ["steelblue"] * len(CLASS_NAMES)
+            colors[predicted_idx] = "green"
+        self.ax.bar(CLASS_NAMES, values, color=colors)
+        self.ax.set_ylim(0, 1)
+        self.ax.set_ylabel("Probabilité")
+        self.ax.set_title("Distribution des émotions")
+        self.ax.tick_params(axis="x", rotation=45)
+        self.fig.tight_layout()
+        self.fig_canvas.draw()
+
+    def _reset_histogram(self):
+        self._draw_histogram([0] * len(CLASS_NAMES))
+
     def load_image(self):
+        if self.webcam_active:
+            self._stop_webcam()
+
         path = filedialog.askopenfilename(
             title="Choisir une image",
             filetypes=[
@@ -79,12 +126,46 @@ class EmoVisionApp:
 
         self.process_image(image_bgr)
 
+    def toggle_webcam(self):
+        if self.webcam_active:
+            self._stop_webcam()
+        else:
+            self._start_webcam()
+
+    def _start_webcam(self):
+        self.capture = cv2.VideoCapture(0)
+        if not self.capture.isOpened():
+            self.result_label.config(text="Erreur : webcam non accessible")
+            self.capture = None
+            return
+        self.webcam_active = True
+        self.webcam_button.config(text="Arrêter la webcam")
+        self._webcam_loop()
+
+    def _stop_webcam(self):
+        self.webcam_active = False
+        if self.capture is not None:
+            self.capture.release()
+            self.capture = None
+        self.webcam_button.config(text="Démarrer la webcam")
+
+    def _webcam_loop(self):
+        if not self.webcam_active or self.capture is None:
+            return
+
+        ret, frame = self.capture.read()
+        if ret:
+            self.process_image(frame)
+
+        self.root.after(WEBCAM_DELAY_MS, self._webcam_loop)
+
     def process_image(self, image_bgr):
         faces = detect_faces(image_bgr)
         display = image_bgr.copy()
 
         if len(faces) == 0:
-            result_text = "Aucun visage détecté dans l'image"
+            result_text = "Aucun visage détecté"
+            self._reset_histogram()
         else:
             face = max(faces, key=lambda b: b[2] * b[3])
             x, y, w, h = face
@@ -92,6 +173,7 @@ class EmoVisionApp:
             face_img = extract_face(image_bgr, face)
             label, probas = predict_emotion(self.model, face_img)
             confidence = probas.max() * 100
+            predicted_idx = int(probas.argmax())
 
             cv2.rectangle(display, (x, y), (x + w, y + h), (0, 255, 0), 2)
             cv2.putText(
@@ -104,6 +186,7 @@ class EmoVisionApp:
                 2,
             )
             result_text = f"Émotion : {label}    Confiance : {confidence:.1f}%"
+            self._draw_histogram(probas, predicted_idx)
 
         self.display_image(display)
         self.result_label.config(text=result_text)
@@ -121,6 +204,11 @@ class EmoVisionApp:
             image=self.current_image_tk,
             anchor=tk.CENTER,
         )
+
+    def _on_close(self):
+        if self.capture is not None:
+            self.capture.release()
+        self.root.destroy()
 
 
 if __name__ == "__main__":
