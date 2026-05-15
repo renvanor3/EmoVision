@@ -2,12 +2,14 @@
 app.py
 Interface graphique EmoVision.
 Permet de charger une image statique ou d'activer le flux webcam
-en temps réel, avec détection de visage, prédiction d'émotion et
-affichage de l'histogramme des probabilités sur les 7 classes.
+en temps réel, avec détection de visage, prédiction d'émotion,
+affichage de l'histogramme des probabilités et capture
+d'instantanés annotés.
 """
 
 import sys
 import tkinter as tk
+from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
 
@@ -22,6 +24,10 @@ from predict.face_detector import detect_faces, extract_face
 from predict.predictor import CLASS_NAMES, load_model, predict_emotion
 
 
+PROJECT_DIR = Path(__file__).parent.parent
+SNAPSHOTS_DIR = PROJECT_DIR / "snapshots"
+SNAPSHOTS_DIR.mkdir(exist_ok=True)
+
 CANVAS_WIDTH = 640
 CANVAS_HEIGHT = 480
 WEBCAM_DELAY_MS = 30
@@ -35,6 +41,7 @@ class EmoVisionApp:
 
         self.model = load_model()
         self.current_image_tk = None
+        self.last_annotated_frame = None
 
         self.webcam_active = False
         self.capture = None
@@ -62,6 +69,13 @@ class EmoVisionApp:
             width=20,
         )
         self.webcam_button.pack(side=tk.LEFT, padx=5)
+
+        tk.Button(
+            top_frame,
+            text="Capturer un instantané",
+            command=self.save_snapshot,
+            width=20,
+        ).pack(side=tk.LEFT, padx=5)
 
         middle_frame = tk.Frame(self.root)
         middle_frame.pack(pady=10)
@@ -188,6 +202,7 @@ class EmoVisionApp:
             result_text = f"Émotion : {label}    Confiance : {confidence:.1f}%"
             self._draw_histogram(probas, predicted_idx)
 
+        self.last_annotated_frame = display
         self.display_image(display)
         self.result_label.config(text=result_text)
 
@@ -204,6 +219,17 @@ class EmoVisionApp:
             image=self.current_image_tk,
             anchor=tk.CENTER,
         )
+
+    def save_snapshot(self):
+        if self.last_annotated_frame is None:
+            self.result_label.config(text="Aucune image à sauvegarder")
+            return
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = SNAPSHOTS_DIR / f"snapshot_{timestamp}.png"
+        cv2.imwrite(str(filename), self.last_annotated_frame)
+        self.result_label.config(text=f"Instantané sauvegardé : {filename.name}")
+
 
     def _on_close(self):
         if self.capture is not None:
