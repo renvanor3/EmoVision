@@ -10,8 +10,6 @@ Projet réalisé dans le cadre de l'UE Projet - Double Licence Mathématiques-In
 
 Encadrante : Line Jakubiec-Jamet
 
-## Installation
-
 ## Structure
 
 - `train/` : entraînement du CNN
@@ -19,7 +17,3 @@ Encadrante : Line Jakubiec-Jamet
 - `gui/` : interface graphique
 - `tests/` : tests unitaires et d'intégration
 - `docs/` : rapport et documentation
-
-## Statut
-
-En cours de développement
