@@ -16,7 +16,7 @@ import tensorflow as tf
 
 
 PROJECT_DIR = Path(__file__).parent.parent
-MODEL_PATH = PROJECT_DIR / "models" / "baseline.keras"
+MODEL_PATH = PROJECT_DIR / "models" / "final.keras"
 TEST_DIR = PROJECT_DIR / "data" / "test"
 
 CLASS_NAMES = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
