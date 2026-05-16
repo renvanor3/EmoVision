@@ -1,12 +1,3 @@
-"""
-train_model.py
-Entraînement du modèle CNN final EmoVision sur FER-2013.
-Architecture à 3 blocs convolutifs (Conv2D + BatchNorm + Dropout)
-avec callbacks ModelCheckpoint, EarlyStopping et ReduceLROnPlateau.
-Gère le déséquilibre des classes via class_weight et produit
-courbes d'apprentissage et matrice de confusion en fin d'entraînement.
-"""
-
 import os
 from pathlib import Path
 

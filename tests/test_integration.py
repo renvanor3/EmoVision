@@ -1,11 +1,3 @@
-"""
-test_integration.py
-Tests d'intégration : pipeline complet de bout en bout.
-Vérifie que le chargement d'image, le prétraitement, la prédiction
-et la détection de visage fonctionnent ensemble correctement,
-sur des images réelles du dataset FER-2013.
-"""
-
 import os
 from pathlib import Path
 

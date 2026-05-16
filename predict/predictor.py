@@ -1,11 +1,3 @@
-"""
-predictor.py
-Module de prédiction d'émotion à partir d'une image.
-Charge le modèle entraîné et fournit une fonction predict_emotion
-qui prend une image (numpy array) et renvoie le label et le vecteur
-de probabilités sur les 7 classes.
-"""
-
 import os
 import random
 from pathlib import Path

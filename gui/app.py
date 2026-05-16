@@ -1,12 +1,3 @@
-"""
-app.py
-Interface graphique EmoVision.
-Permet de charger une image statique ou d'activer le flux webcam
-en temps réel, avec détection de visage, prédiction d'émotion,
-affichage de l'histogramme des probabilités et capture
-d'instantanés annotés.
-"""
-
 import sys
 import tkinter as tk
 from datetime import datetime

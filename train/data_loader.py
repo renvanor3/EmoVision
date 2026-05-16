@@ -1,10 +1,3 @@
-"""
-data_loader.py
-Chargement et préparation du dataset FER-2013.
-Construit les datasets train, validation et test avec normalisation
-des pixels et augmentation des données pour le train.
-"""
-
 import tensorflow as tf
 from pathlib import Path
 import matplotlib.pyplot as plt

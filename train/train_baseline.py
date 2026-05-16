@@ -1,10 +1,3 @@
-"""
-train_baseline.py
-Entraînement d'un CNN baseline simple sur FER-2013.
-Sert de smoke test pour valider le pipeline complet et de point de
-départ utilisable pour le développement de la GUI en parallèle.
-"""
-
 import tensorflow as tf
 from pathlib import Path
 import matplotlib.pyplot as plt

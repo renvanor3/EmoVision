@@ -1,10 +1,3 @@
-"""
-test_predictor.py
-Tests unitaires pour le module de prédiction d'émotion.
-Vérifie le prétraitement des images et la cohérence des sorties
-du modèle (forme, plage de valeurs, somme à 1 pour la softmax).
-"""
-
 import numpy as np
 import pytest
 

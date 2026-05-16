@@ -1,9 +1,3 @@
-"""
-explore_dataset.py
-Exploration du dataset FER-2013 : liste des classes, comptage des images
-par classe (train et test), affichage de la distribution et d'échantillons.
-"""
-
 import os
 from pathlib import Path
 import cv2

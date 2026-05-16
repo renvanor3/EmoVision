@@ -1,10 +1,3 @@
-"""
-test_performance.py
-Tests de performance : mesure du temps d'inférence et estimation
-des FPS atteignables pour valider le critère "au moins 10 FPS"
-du cahier des charges.
-"""
-
 import time
 
 import numpy as np

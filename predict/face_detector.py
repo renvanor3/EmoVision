@@ -1,11 +1,3 @@
-"""
-face_detector.py
-Module de détection de visage utilisant le classifieur en cascade de
-Haar fourni par OpenCV (haarcascade_frontalface_default).
-Fournit detect_faces pour obtenir les bounding boxes des visages
-et extract_face pour récupérer la région d'un visage donné.
-"""
-
 import sys
 from pathlib import Path
 
